@@ -63,34 +63,34 @@ public:
     int64_t Progress()
     {
         int64_t min_value = std::numeric_limits<int64_t>::max();
-        std::unique_ptr<Progression> progression;
+        unsigned id = 0;
         for (auto& iter : _progressions)
         {
             if (iter.second.Value() < min_value)
             {
                 //if progression has a lower value
-                progression.release(); //release the poriter so it does not get removed 
-                progression.reset(&iter.second);
+                id = iter.first;
                 min_value = iter.second.Value();
             }
             else if (iter.second.Value() == min_value)
             {
-                if (!progression.get())
+                if (id)
                 {
                     //in case one of the progressions got its value int64_t.max. Just a precaution, though
-                    progression.reset(&iter.second);
+                    id = iter.first;
                 }
-                else if(progression->ID() > iter.first)
+                else if(id > iter.first)
                 {
                     //replace the pointer only if ID is less than the id of remembered progression
-                    progression.release();
-                    progression.reset(&iter.second);
+                    id = iter.first;
                 }
             }
         }
-        int64_t ret = progression->DoStep();
-        progression.release();
-        return ret;
+        //used iterator and find because _progressions[id] would require default constructor for Progression which it does not have
+        auto it = _progressions.find(id);
+        return it != _progressions.end()
+            ? it->second.DoStep()
+            : 0;
     }
 };
 
