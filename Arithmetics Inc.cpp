@@ -1,4 +1,5 @@
 #include <map>
+#include <set>
 #include <tuple>
 #include <limits>
 #include <memory>
@@ -21,7 +22,7 @@ public:
     }
     
     //value getter
-    int64_t Value()
+    int64_t Value() const
     {
         return _value;
     }
@@ -33,7 +34,7 @@ public:
     }
 
     //ID getter
-    unsigned ID()
+    unsigned ID() const
     {
         return _id;
     }
@@ -42,6 +43,7 @@ public:
 class Proggressions
 {
     std::map<unsigned, Progression> _progressions;
+    std::set<std::tuple<int64_t, unsigned>> _sorted_progressions;
 
 public:
     //we don't need a constructor - default one should do
@@ -49,48 +51,41 @@ public:
     void Add(int start, int step, unsigned id)
     {
         _progressions.insert({id, Progression(start, step, id)});
+        _sorted_progressions.insert({ start, id });
         //we assume that ids won't repeat so that there is no need to check for that. If they repeat - there would happen an exception
         //errata: C++ does not throw exception, I worked with C# for too long, haha
     }
 
     void Remove(unsigned id)
     {
-        _progressions.erase(id);
+        const auto& it = _progressions.find(id);
+        if (it == _progressions.end())
+            return;
+        const auto& sorted_it = _sorted_progressions.find({ it->second.Value(),  it->first });
+        if (sorted_it != _sorted_progressions.end())
+            _sorted_progressions.erase(sorted_it);
+        _progressions.erase(it);
         //Again, assume that the id is in the database - won't check. The exception would be thrown
         //errata: C++ does not throw exception, I worked with C# for too long, haha
     }
 
     int64_t Progress()
     {
-        int64_t min_value = std::numeric_limits<int64_t>::max();
-        unsigned id = 0;
-        for (auto& iter : _progressions)
-        {
-            if (iter.second.Value() < min_value)
-            {
-                //if progression has a lower value
-                id = iter.first;
-                min_value = iter.second.Value();
-            }
-            else if (iter.second.Value() == min_value)
-            {
-                if (id)
-                {
-                    //in case one of the progressions got its value int64_t.max. Just a precaution, though
-                    id = iter.first;
-                }
-                else if(id > iter.first)
-                {
-                    //replace the pointer only if ID is less than the id of remembered progression
-                    id = iter.first;
-                }
-            }
-        }
-        //used iterator and find because _progressions[id] would require default constructor for Progression which it does not have
-        auto it = _progressions.find(id);
-        return it != _progressions.end()
-            ? it->second.DoStep()
-            : 0;
+        const auto& sorted_it = _sorted_progressions.begin(); //progresion with the least value and the least id would be in the beginning as set is ordered. 
+        if (sorted_it == _sorted_progressions.end())
+            return 0ll;
+      
+        int64_t ret = std::get<0>(*sorted_it); //the current value of progression
+
+        const auto& it = _progressions.find(std::get<1>(*sorted_it));
+        auto& progression = it->second;
+        progression.DoStep();
+
+        //update sorted values. The tree would take care of ordering the values again
+        _sorted_progressions.erase(sorted_it);
+        _sorted_progressions.insert({ progression.Value(), progression.ID() });
+
+        return ret;
     }
 };
 
