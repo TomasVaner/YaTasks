@@ -41,18 +41,18 @@ public:
 
 class Proggressions
 {
-    std::map<unsigned int, Progression> _progressions;
+    std::map<unsigned, Progression> _progressions;
 
 public:
     //we don't need a constructor - default one should do
 
-    void Add(int start, int step, int id)
+    void Add(int start, int step, unsigned id)
     {
         _progressions.insert({id, Progression(start, step, id)});
         //we assume that ids won't repeat so that there is no need to check for that. If they repeat - there would happen an exception
     }
 
-    void Remove(int id)
+    void Remove(unsigned id)
     {
         _progressions.erase(id);
         //Again, assume that the id is in the database - won't check. The exception would be thrown
@@ -99,7 +99,7 @@ int main()
     //reading the commands count and then iterate reading commands
     unsigned commands_count;
     std::cin >> commands_count; 
-    for(int index = 0; index < commands_count; ++index)
+    for(unsigned index = 0; index < commands_count; ++index)
     {
         unsigned command;
         std::cin >> command;
@@ -118,7 +118,7 @@ int main()
         case 2:
             //remove a progression from the database by its id
             std::cin >> id;
-            progressions_database.Remove(id); //assume we id to be correct
+            progressions_database.Remove(id); //assume the id to be correct
             break;
 
         case 3:
