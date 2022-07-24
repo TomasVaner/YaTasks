@@ -11,6 +11,7 @@ class Progression
     unsigned _id;
 
 public:
+    //just a simple constructor that stores the given values
     Progression(int start, int step, unsigned id) : 
         _value(start),
         _step(step),
@@ -19,6 +20,7 @@ public:
 
     }
     
+    //value getter
     int64_t Value()
     {
         return _value;
@@ -26,11 +28,10 @@ public:
 
     int64_t Step()
     {
-        int64_t ret = _value;
-        _value += _step;
-        return ret;
+        return (_value += _step) - _step; //tidied it up just to make it one-liner. Shame there is no way to make += behave like post-increment
     }
 
+    //ID getter
     unsigned ID()
     {
         return _id;
@@ -64,15 +65,21 @@ public:
         {
             if (iter.second.Value() < min_value)
             {
-                progression.release();
+                //if progression has a lower value
+                progression.release(); //release the poriter so it does not get removed 
                 progression.reset(&iter.second);
                 min_value = iter.second.Value();
             }
-            else if (iter.second.Value() == min_value 
-                    && progression.get())
+            else if (iter.second.Value() == min_value)
             {
-                if(progression->ID() > iter.first)
+                if (!progression.get())
                 {
+                    //in case one of the progressions got its value int64_t.max. Just a precaution, though
+                    progression.reset(&iter.second);
+                }
+                else if(progression->ID() > iter.first)
+                {
+                    //replace the pointer only if ID is less than the id of remembered progression
                     progression.release();
                     progression.reset(&iter.second);
                 }
@@ -86,10 +93,11 @@ public:
 
 int main()
 {
-    Proggressions progressions_database;
+    Proggressions progressions_database; //the database that is gonna store and manage our progressions
 
+    //reading the commands count and then iterate reading commands
     unsigned commands_count;
-    std::cin >> commands_count;
+    std::cin >> commands_count; 
     for(int index = 0; index < commands_count; ++index)
     {
         unsigned command;
@@ -99,6 +107,7 @@ int main()
         switch (command)
         {
         case 1:
+            //just add the new progression to the database
             int start, step;
             std::cin >> start >> step >> id;
 
@@ -106,11 +115,13 @@ int main()
             break;
         
         case 2:
+            //remove a progression from the database by its id
             std::cin >> id;
             progressions_database.Remove(id); //assume we id to be correct
             break;
 
         case 3:
+            //make an operation of getting minimum value and then advance the progression
             int64_t value = progressions_database.Progress();
             std::cout << value << std::endl;
             break;
