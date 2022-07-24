@@ -22,7 +22,7 @@ public:
     }
     
     //value getter
-    int64_t Value()
+    int64_t Value() const
     {
         return _value;
     }
@@ -34,7 +34,7 @@ public:
     }
 
     //ID getter
-    unsigned ID()
+    unsigned ID() const
     {
         return _id;
     }
