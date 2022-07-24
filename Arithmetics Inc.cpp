@@ -50,12 +50,14 @@ public:
     {
         _progressions.insert({id, Progression(start, step, id)});
         //we assume that ids won't repeat so that there is no need to check for that. If they repeat - there would happen an exception
+        //errata: C++ does not throw exception, I worked with C# for too long, haha
     }
 
     void Remove(unsigned id)
     {
         _progressions.erase(id);
         //Again, assume that the id is in the database - won't check. The exception would be thrown
+        //errata: C++ does not throw exception, I worked with C# for too long, haha
     }
 
     int64_t Progress()
