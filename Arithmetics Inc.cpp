@@ -26,7 +26,8 @@ public:
         return _value;
     }
 
-    int64_t Step()
+    //progress the progression and return previous value
+    int64_t DoStep()
     {
         return (_value += _step) - _step; //tidied it up just to make it one-liner. Shame there is no way to make += behave like post-increment
     }
@@ -85,7 +86,7 @@ public:
                 }
             }
         }
-        int64_t ret = progression->Step();
+        int64_t ret = progression->DoStep();
         progression.release();
         return ret;
     }
