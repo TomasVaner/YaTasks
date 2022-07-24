@@ -2,6 +2,7 @@
 #include <tuple>
 #include <limits>
 #include <memory>
+#include <iostream>
 
 class Progression
 {
@@ -18,7 +19,7 @@ public:
 
     }
     
-    int Value()
+    int64_t Value()
     {
         return _value;
     }
@@ -63,24 +64,57 @@ public:
         {
             if (iter.second.Value() < min_value)
             {
-                progression.reset();
+                progression.release();
+                progression.reset(&iter.second);
+                min_value = iter.second.Value();
             }
             else if (iter.second.Value() == min_value 
                     && progression.get())
             {
                 if(progression->ID() > iter.first)
                 {
+                    progression.release();
                     progression.reset(&iter.second);
                 }
             }
         }
-        return progression->Value();
+        int64_t ret = progression->Step();
+        progression.release();
+        return ret;
     }
 };
 
-void main()
+int main()
 {
     Proggressions progressions_database;
 
-    
+    unsigned commands_count;
+    std::cin >> commands_count;
+    for(int index = 0; index < commands_count; ++index)
+    {
+        unsigned command;
+        std::cin >> command;
+        
+        unsigned id;
+        switch (command)
+        {
+        case 1:
+            int start, step;
+            std::cin >> start >> step >> id;
+
+            progressions_database.Add(start, step, id); //assume all data correct and no repetative ids
+            break;
+        
+        case 2:
+            std::cin >> id;
+            progressions_database.Remove(id); //assume we id to be correct
+            break;
+
+        case 3:
+            int64_t value = progressions_database.Progress();
+            std::cout << value << std::endl;
+            break;
+        }
+    }
+    return 0;
 }
