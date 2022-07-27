@@ -42,8 +42,8 @@ public:
 
 class Proggressions
 {
-    std::map<unsigned, Progression> _progressions;
-    std::set<std::tuple<int64_t, unsigned>> _sorted_progressions;
+    std::map<unsigned, Progression> _progressions; //progressions collection
+    std::set<std::tuple<int64_t, unsigned>> _sorted_progressions; //progressions sorted by their values in ascending order
 
 public:
     //we don't need a constructor - default one should do
@@ -55,7 +55,7 @@ public:
         //we assume that ids won't repeat so that there is no need to check for that. If they repeat - there would happen an exception
         //errata: C++ does not throw exception, I worked with C# for too long, haha
     }
-
+    
     void Remove(unsigned id)
     {
         const auto& it = _progressions.find(id);
@@ -69,13 +69,19 @@ public:
         //errata: C++ does not throw exception, I worked with C# for too long, haha
     }
 
+/**
+ * @brief Makes an operation 3 for the progressions collection
+ *      Finds a progression with minimum value and id if more than 1 is found. Then progresses that progression by 1 step
+ * 
+ * @return int64_t the value of the progression found before the progression step
+ */
     int64_t Progress()
     {
         const auto& sorted_it = _sorted_progressions.begin(); //progresion with the least value and the least id would be in the beginning as set is ordered. 
         if (sorted_it == _sorted_progressions.end())
             return 0ll;
       
-        int64_t ret = std::get<0>(*sorted_it); //the current value of progression
+        int64_t ret = std::get<0>(*sorted_it); // the current value of progression
 
         const auto& it = _progressions.find(std::get<1>(*sorted_it));
         auto& progression = it->second;
